@@ -9,17 +9,29 @@ class NumC < ExprC
   def initialize(number)
     @number = number
   end
+
+  def number
+    return @number
+  end
 end
 
 class BoolC < ExprC
   def initialize(boolean)
     @boolean = boolean
   end
+
+  def boolean
+    return @boolean
+  end
 end
 
 class IdC < ExprC
   def initialize(symbol)
     @symbol = symbol
+  end
+
+  def symbol
+    return @symbol
   end
 end
 
@@ -29,6 +41,18 @@ class BinopC < ExprC
     @left = left
     @right = right
   end
+
+  def symbol
+    return @symbol
+  end
+
+  def left
+    return @left
+  end
+
+  def right
+    retun @right
+  end
 end
 
 class IfC < ExprC
@@ -37,12 +61,32 @@ class IfC < ExprC
   @one = one
   @two = two
   end
+
+  def expr
+    return @expr
+  end
+
+  def one
+    return @one
+  end
+
+  def two
+    return @two
+  end
 end
 
 class AppC < ExprC
   def initialize(func, args)
     @func = func
     @args = args
+  end
+
+  def func
+    return @func
+  end
+
+  def args
+    return @args
   end
 end
 
@@ -51,17 +95,33 @@ class LamC < ExprC
     @params = params
     @body = body
   end
+
+  def params
+    return @params
+  end
+
+  def body
+    return @body
+  end
 end
 
 class NumV < Value
   def initialize(number)
     @number = number
   end
+
+  def number
+    return @number
+  end
 end
 
 class BoolV < Value
   def initialize(boolean)
     @boolean = boolean
+  end
+
+  def boolean
+    return @boolean
   end
 end
 
@@ -70,6 +130,14 @@ class Binding
     @name = name
     @val = val
   end
+
+  def name
+    return @name
+  end
+
+  def val
+    return @val
+  end
 end
 
 class CloV < Value
@@ -77,6 +145,18 @@ class CloV < Value
     @params = params
     @body = body
     @env = env
+  end
+
+  def params
+    return @params
+  end
+
+  def body
+    return @body
+  end
+
+  def env
+    return @env
   end
 end
 
