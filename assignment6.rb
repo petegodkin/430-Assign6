@@ -125,7 +125,7 @@ class BoolV < Value
   end
 end
 
-class Binding
+class Bind
   def initialize(name, val)
     @name = name
     @val = val
@@ -160,9 +160,6 @@ class CloV < Value
   end
 end
 
-#variables
-environment = []
-
 #functions
 def interp(expr, env)
   if expr.instance_of? NumC
@@ -193,6 +190,12 @@ def interp(expr, env)
 
   elsif expr.instance_of? LamC
     return CloV.new(expr.params, expr.body, env)
+
+  elsif expr.instance_of? AppC
+    funcCloV = interp(expr.func, env)
+    if expr.args.length == funcCloV.params.length
+      return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
+    end
   end
 end
 
@@ -203,4 +206,14 @@ def lookup(symbol, env)
     end
   end
   raise symbol, 'Not Found in lookup'
+end
+
+
+def bindAll(params, args, env, clovEnv)
+  if params.empty? == true
+    return clovEnv
+  else
+    return Bind.new(params.first, interp(args.first, env)) + bindAll(params.rest, args.rest, env, clovEnv)
+  end
+
 end
