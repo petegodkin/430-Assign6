@@ -98,9 +98,5 @@ def interp(expr)
     else
       raise condition, "Invalid Value Type in IfC in interp"
     end
-    
-  elsif
-
   end
-
 end
