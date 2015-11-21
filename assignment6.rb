@@ -172,9 +172,13 @@ def interp(expr, env)
     return lookup(expr.symbol, env)
 
   elsif expr.instance_of? BinopC
-    lft = interp(expr.left, env).number
-    rght = interp(expr.right, env).number
-    return NumV.new(lft.send(expr.symbol, rght))
+    lft = interp(expr.left, env)
+    rght = interp(expr.right, env)
+    if (lft.instance_of? NumV) && (rght.instance_of? NumV)
+      return NumV.new(lft.number.send(expr.symbol, rght.number))
+    else
+      fail 'Argument(s) not a NumV'
+    end
 
   elsif expr.instance_of? IfC
     condition = interp(expr.expr, env)
@@ -193,8 +197,15 @@ def interp(expr, env)
 
   elsif expr.instance_of? AppC
     funcCloV = interp(expr.func, env)
-    if expr.args.length == funcCloV.params.length
-      return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
+
+    if funcCloV.instance_of? CloV
+      if expr.args.length == funcCloV.params.length
+        return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
+      else
+        fail 'interp: Wrong arity'
+      end
+    else
+      raise funcCloV, "Not evaluated into a CloV in AppC"
     end
   end
 end
@@ -215,5 +226,4 @@ def bindAll(params, args, env, clovEnv)
   else
     return Bind.new(params.first, interp(args.first, env)) + bindAll(params.rest, args.rest, env, clovEnv)
   end
-
 end
