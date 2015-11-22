@@ -160,7 +160,48 @@ class CloV < Value
   end
 end
 
-#functions
+
+#[:with, [:z,:=,14], [:+, :z, :z]]
+
+def parse(expr)
+  if not expr.is_a? (Array)
+    case expr
+      when Boolean
+        BoolC.new(expr)
+      when Number
+        NumC.new(expr)
+      when Symbol
+        IdC.new(expr)
+    end
+
+  elsif expr.first.is_a? (Symbol)
+
+    case expr.first
+      when 'if'
+        IfC.new(parse(expr[1]), parse(expr[2]), parse(expr[3]))
+
+      when 'with'
+        paramsArgs = expr.slice(1, expr.length - 1)
+        AppC.new(LamC.new(paramsArgs.map {|x| withParams(x)}, parse(expr.first)), paramsArgs.map {|x| withArgs(x)})
+
+      when 'func'
+        params = expr.slice(1, expr.length - 1)
+        if params.uniq.length == params.length
+          LamC.new(params, parse(expr.last))
+        else
+          raise params, 'Duplicate Params'
+        end
+
+      when Symbol
+        BinopC.new(expr[1], parse(expr[2]), parse(expr[3]))
+    end
+
+  else
+    args = expr.slice(1, expr.length)
+    AppC.new(parse(expr.first), args.map {|x| parse(x)})
+  end
+end
+
 def interp(expr, env)
   if expr.instance_of? NumC
     return NumV.new(expr.number)
@@ -210,6 +251,30 @@ def interp(expr, env)
   end
 end
 
+def serialize (val)
+  case val
+    when BoolV
+      return val.boolean.to_s
+    when NumV
+      return val.number.to_s
+    when CloV
+      return '#<procedure>'
+  end
+end
+
+def topEval(arr)
+  serialize(interp(parse(arr), []))
+end
+
+#helper functions
+def withArgs(expr)
+  return parse(expr[2])
+end
+
+def withParams(expr)
+  return expr[0]
+end
+
 def lookup(symbol, env)
   env.each do |bind|
     if bind.name == symbol
@@ -218,7 +283,6 @@ def lookup(symbol, env)
   end
   raise symbol, 'Not Found in lookup'
 end
-
 
 def bindAll(params, args, env, clovEnv)
   if params.empty? == true
