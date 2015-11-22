@@ -160,7 +160,48 @@ class CloV < Value
   end
 end
 
-#functions
+
+#[:with, [:z,:=,14], [:+, :z, :z]]
+
+def parse(expr)
+  if not expr.is_a? (Array)
+    case expr
+      when Boolean
+        BoolC.new(expr)
+      when Number
+        NumC.new(expr)
+      when Symbol
+        IdC.new(expr)
+    end
+
+  elsif expr.first.is_a? (Symbol)
+
+    case expr.first
+      when 'if'
+        IfC.new(parse(expr[1]), parse(expr[2]), parse(expr[3]))
+
+      when 'with'
+        paramsArgs = expr.slice(1, expr.length - 1)
+        AppC.new(LamC.new(paramsArgs.map {|x| withParams(x)}, parse(expr.first)), paramsArgs.map {|x| withArgs(x)})
+
+      when 'func'
+        params = expr.slice(1, expr.length - 1)
+        if params.uniq.length == params.length
+          LamC.new(params, parse(expr.last))
+        else
+          raise params, 'Duplicate Params'
+        end
+
+      when Symbol
+        BinopC.new(expr[1], parse(expr[2]), parse(expr[3]))
+    end
+
+  else
+    args = expr.slice(1, expr.length)
+    AppC.new(parse(expr.first), args.map {|x| parse(x)})
+  end
+end
+
 def interp(expr, env)
   if expr.instance_of? NumC
     return NumV.new(expr.number)
@@ -172,9 +213,13 @@ def interp(expr, env)
     return lookup(expr.symbol, env)
 
   elsif expr.instance_of? BinopC
-    lft = interp(expr.left, env).number
-    rght = interp(expr.right, env).number
-    return NumV.new(lft.send(expr.symbol, rght))
+    lft = interp(expr.left, env)
+    rght = interp(expr.right, env)
+    if (lft.instance_of? NumV) && (rght.instance_of? NumV)
+      return NumV.new(lft.number.send(expr.symbol, rght.number))
+    else
+      fail 'Argument(s) not a NumV'
+    end
 
   elsif expr.instance_of? IfC
     condition = interp(expr.expr, env)
@@ -193,10 +238,41 @@ def interp(expr, env)
 
   elsif expr.instance_of? AppC
     funcCloV = interp(expr.func, env)
-    if expr.args.length == funcCloV.params.length
-      return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
+
+    if funcCloV.instance_of? CloV
+      if expr.args.length == funcCloV.params.length
+        return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
+      else
+        fail 'interp: Wrong arity'
+      end
+    else
+      raise funcCloV, "Not evaluated into a CloV in AppC"
     end
   end
+end
+
+def serialize (val)
+  case val
+    when BoolV
+      return val.boolean.to_s
+    when NumV
+      return val.number.to_s
+    when CloV
+      return '#<procedure>'
+  end
+end
+
+def topEval(arr)
+  serialize(interp(parse(arr), []))
+end
+
+#helper functions
+def withArgs(expr)
+  return parse(expr[2])
+end
+
+def withParams(expr)
+  return expr[0]
 end
 
 def lookup(symbol, env)
@@ -208,12 +284,10 @@ def lookup(symbol, env)
   raise symbol, 'Not Found in lookup'
 end
 
-
 def bindAll(params, args, env, clovEnv)
   if params.empty? == true
     return clovEnv
   else
     return Bind.new(params.first, interp(args.first, env)) + bindAll(params.rest, args.rest, env, clovEnv)
   end
-
 end
