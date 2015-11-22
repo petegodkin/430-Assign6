@@ -27,10 +27,10 @@ assert_equal 5, interp(IdC.new(:x), [Bind.new(:x, NumV.new(5))]).number
 assert_equal 7, interp(AppC.new(LamC.new([:a, :b], BinopC.new(:+, IdC.new(:a), IdC.new(:b))), [NumC.new(3), NumC.new(4)]), []).number
 
 #top eval tests
-#assert_equal "28", topEval(['with', [:z, :=, 14], [:+ :z, :z]])
+assert_equal "28", topEval([:with, [:z, "boo", 14], [:+, :z, :z]])
 assert_equal "7", topEval([:with, [:f, "=", [:func, :a, :b, [:+, :a, :b]]], [:f, 3, 4]])
 assert_equal "7", topEval([[:func, :a, :b, [:+, :a, :b]], 3, 4])
 assert_equal "7", topEval([:+, 3, 4])
 assert_equal "7", topEval(7)
 
-#puts parse(['with', [:f, "=", [:func, :a, :b, [:+, :a, :b]]], [:f, 3, 4]]).args
+

@@ -193,7 +193,12 @@ def parse(expr)
         end
 
       when Symbol
-        BinopC.new(expr[0], parse(expr[1]), parse(expr[2]))
+	if  [:+, :-, :/, :*].include?(expr[0])
+          BinopC.new(expr[0], parse(expr[1]), parse(expr[2]))
+        else
+          args = expr.slice(1, expr.length)
+          AppC.new(parse(expr.first), args.map {|x| parse(x)})
+        end
     end
 
   else
