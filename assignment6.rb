@@ -177,23 +177,23 @@ def parse(expr)
   elsif expr.first.is_a? (Symbol)
 
     case expr.first
-      when 'if'
+      when :if
         IfC.new(parse(expr[1]), parse(expr[2]), parse(expr[3]))
 
-      when 'with'
-        paramsArgs = expr.slice(1, expr.length - 1)
-        AppC.new(LamC.new(paramsArgs.map {|x| withParams(x)}, parse(expr.first)), paramsArgs.map {|x| withArgs(x)})
+      when :with
+        paramsArgs = expr.slice(1, expr.length - 2)
+        AppC.new(LamC.new(paramsArgs.map {|x| withParams(x)}, parse(expr.last)), paramsArgs.map {|x| withArgs(x)})
 
-      when 'func'
-        params = expr.slice(1, expr.length - 1)
+      when :func
+        params = expr.slice(1, expr.length - 2)
         if params.uniq.length == params.length
           LamC.new(params, parse(expr.last))
         else
-          raise params, "Duplicate Params"
+          raise "Duplicate Params"
         end
 
       when Symbol
-        BinopC.new(expr[1], parse(expr[2]), parse(expr[3]))
+        BinopC.new(expr[0], parse(expr[1]), parse(expr[2]))
     end
 
   else
@@ -230,7 +230,7 @@ def interp(expr, env)
         return interp(expr.two, env)
       end
     else
-      raise condition, "Invalid Value Type in IfC in interp"
+      raise "Invalid Value Type in IfC in interp"
     end
 
   elsif expr.instance_of? LamC
@@ -243,10 +243,10 @@ def interp(expr, env)
       if expr.args.length == funcCloV.params.length
         return interp(funcCloV.body, bindAll(funcCloV.params, expr.args, env, funcCloV.env))
       else
-        fail 'interp: Wrong arity'
+        fail 'interp: Wrong arity ' + expr.args.to_s + ' ' + funcCloV.params.to_s
       end
     else
-      raise funcCloV, "Not evaluated into a CloV in AppC"
+      raise "Not evaluated into a CloV in AppC"
     end
   end
 end

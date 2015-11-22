@@ -28,5 +28,9 @@ assert_equal 7, interp(AppC.new(LamC.new([:a, :b], BinopC.new(:+, IdC.new(:a), I
 
 #top eval tests
 #assert_equal "28", topEval(['with', [:z, :=, 14], [:+ :z, :z]])
-#assert_equal "7", topEval(['with', [:f, :=, [func :a :b [:+ :a :b]]], [:f 3 4]])
+assert_equal "7", topEval([:with, [:f, "=", [:func, :a, :b, [:+, :a, :b]]], [:f, 3, 4]])
 assert_equal "7", topEval([[:func, :a, :b, [:+, :a, :b]], 3, 4])
+assert_equal "7", topEval([:+, 3, 4])
+assert_equal "7", topEval(7)
+
+#puts parse(['with', [:f, "=", [:func, :a, :b, [:+, :a, :b]]], [:f, 3, 4]]).args
