@@ -166,9 +166,9 @@ end
 def parse(expr)
   if not expr.is_a? (Array)
     case expr
-      when Boolean
+      when !!expr == expr
         BoolC.new(expr)
-      when Number
+      when Numeric
         NumC.new(expr)
       when Symbol
         IdC.new(expr)
@@ -189,7 +189,7 @@ def parse(expr)
         if params.uniq.length == params.length
           LamC.new(params, parse(expr.last))
         else
-          raise params, 'Duplicate Params'
+          raise params, "Duplicate Params"
         end
 
       when Symbol
@@ -206,7 +206,7 @@ def interp(expr, env)
   if expr.instance_of? NumC
     return NumV.new(expr.number)
 
-  elsif expr.instance_of? BoolC
+  elsif expr.instance_of? BoolCf
     return BoolV.new(expr.boolean)
 
   elsif expr.instance_of? IdC
@@ -230,7 +230,7 @@ def interp(expr, env)
         return interp(expr.two, env)
       end
     else
-      raise condition, 'Invalid Value Type in IfC in interp'
+      raise condition, "Invalid Value Type in IfC in interp"
     end
 
   elsif expr.instance_of? LamC
@@ -281,13 +281,13 @@ def lookup(symbol, env)
       return bind.val
     end
   end
-  raise symbol, 'Not Found in lookup'
+  raise "Not Found in lookup"
 end
 
 def bindAll(params, args, env, clovEnv)
   if params.empty? == true
     return clovEnv
   else
-    return Bind.new(params.first, interp(args.first, env)) + bindAll(params.rest, args.rest, env, clovEnv)
+    return Bind.new(params.first, interp(args.first, env)) + bindAll(params.slice(1, params.length), args.slice(1, args.length), env, clovEnv)
   end
 end
