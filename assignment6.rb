@@ -206,7 +206,7 @@ def interp(expr, env)
   if expr.instance_of? NumC
     return NumV.new(expr.number)
 
-  elsif expr.instance_of? BoolCf
+  elsif expr.instance_of? BoolC
     return BoolV.new(expr.boolean)
 
   elsif expr.instance_of? IdC
