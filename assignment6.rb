@@ -281,13 +281,13 @@ def lookup(symbol, env)
       return bind.val
     end
   end
-  raise "Not Found in lookup"
+  raise "Not Found in lookup: " + symbol.to_s
 end
 
 def bindAll(params, args, env, clovEnv)
   if params.empty? == true
     return clovEnv
   else
-    return Bind.new(params.first, interp(args.first, env)) + bindAll(params.slice(1, params.length), args.slice(1, args.length), env, clovEnv)
+    return [Bind.new(params.first, interp(args.first, env))] + bindAll(params.slice(1, params.length), args.slice(1, args.length), env, clovEnv)
   end
 end
